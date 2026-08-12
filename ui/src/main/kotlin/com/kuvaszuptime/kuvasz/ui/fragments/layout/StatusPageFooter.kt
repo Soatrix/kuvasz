@@ -32,11 +32,11 @@ internal fun FlowContent.statusPageFooter(statusPageGeneratedAt: OffsetDateTime)
                             span {
                                 +"${Messages.poweredBy()} "
                                 a(
-                                    href = "https://kuvasz-uptime.dev",
+                                    href = "https://www.soatrix.com",
                                 ) {
                                     classes(LINK_SECONDARY)
                                     targetBlank()
-                                    +"Kuvasz Uptime"
+                                    +"Soatrix"
                                 }
                             }
                         }
