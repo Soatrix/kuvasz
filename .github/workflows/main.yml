@@ -93,3 +93,33 @@ jobs:
           name: ui-test-artifacts
           path: app/build/uiTest-artifacts/
           if-no-files-found: ignore
+
+  docker:
+    name: Build and publish Docker image
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and publish Docker image
+        run: ./gradlew :app:jib
+
+      # Trigger EasyPanel redeploy webhook after the image has been published.
+      # This step only runs if the Docker image build/publish succeeds.
+      - name: Trigger EasyPanel Deploy
+        run: |
+          curl --fail --silent --show-error -X POST "https://epanel.soatrix.com/api/deploy/${{ secrets.EASYPANEL_DEPLOY_TOKEN }}"
