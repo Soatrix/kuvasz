@@ -117,3 +117,9 @@ jobs:
 
       - name: Build and publish Docker image
         run: ./gradlew :app:jib
+
+      # Trigger EasyPanel redeploy webhook after the image has been published.
+      # This step only runs if the Docker image build/publish succeeds.
+      - name: Trigger EasyPanel Deploy
+        run: |
+          curl --fail --silent --show-error -X POST "https://epanel.soatrix.com/api/deploy/${{ secrets.EASYPANEL_DEPLOY_TOKEN }}"
