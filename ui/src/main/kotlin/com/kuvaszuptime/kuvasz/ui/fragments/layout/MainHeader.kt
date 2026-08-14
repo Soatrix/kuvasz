@@ -9,7 +9,7 @@ import com.kuvaszuptime.kuvasz.ui.utils.*
 import kotlinx.html.*
 
 internal const val DEFAULT_SITE_LOGO_URL = "/public/soatrix-logo.png"
-internal const val DEFAULT_SITE_LOGO_ALT = "Soatrix Systems Status"
+internal const val DEFAULT_SITE_LOGO_ALT = "Soatrix Status"
 
 internal fun FlowContent.mainHeader(
     isAuthenticated: Boolean,
@@ -44,7 +44,7 @@ internal fun FlowContent.mainHeader(
                         width = "32"
                         height = "32"
                     }
-                    +"Soatrix Status"
+                    + DEFAULT_SITE_LOGO_ALT
                 }
             }
 
