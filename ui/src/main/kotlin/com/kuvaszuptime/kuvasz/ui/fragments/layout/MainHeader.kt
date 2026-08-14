@@ -44,7 +44,7 @@ internal fun FlowContent.mainHeader(
                         width = "32"
                         height = "32"
                     }
-                    +"Kuvasz"
+                    +"Soatrix Status"
                 }
             }
 
