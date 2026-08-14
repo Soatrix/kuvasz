@@ -272,7 +272,7 @@ jib {
         }
     }
     to {
-        image = "kuvaszmonitoring/kuvasz:$version"
+        image = "fibbicles/kuvasz:$version"
         tags = setOf("latest")
     }
     container {
