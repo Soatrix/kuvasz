@@ -154,20 +154,12 @@ tasks.withType<Test> {
     jvmArgs("-Xmx2048M")
 }
 
-/**
- * A dedicated `uiTest` source set holding the browser-driven (Playwright) end-to-end suite. It boots the real
- * Micronaut app in-process against the shared Testcontainers Postgres and drives it through a headless Chromium.
- * It is intentionally NOT part of `check` (run it explicitly via `./gradlew :app:uiTest`) and is excluded from the
- * kover coverage gate, since E2E coverage shouldn't contaminate the unit/integration coverage numbers.
- */
 testing {
     suites {
         register<JvmTestSuite>("uiTest") {
             useJUnitJupiter()
             dependencies {
                 implementation(project())
-                // The shared/model modules are only `implementation` deps of `:app`, so they aren't visible
-                // transitively. Declare them explicitly so the specs can reference i18n `Messages`, `MonitorID`, etc.
                 implementation(project(":model"))
                 implementation(project(":shared"))
                 implementation(testFixtures(project()))
@@ -185,18 +177,10 @@ testing {
             targets.all {
                 testTask.configure {
                     jvmArgs("-Xmx2048M")
-                    // Always run after the fast unit/integration suite when both are requested
                     shouldRunAfter(tasks.named("test"))
-                    // `Playwright.create()` would otherwise shell out to a bare `playwright install`, which downloads
-                    // *every* browser (Firefox, WebKit) even though the suite only ever drives Chromium. Skipping it
-                    // means the browser has to be there already, hence the explicit install task below.
                     dependsOn("installPlaywrightChromium")
                     environment("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "1")
-                    // Lets local debugging open a headed browser: `./gradlew :app:uiTest -Dui.headed=true`
                     systemProperty("ui.headed", System.getProperty("ui.headed", "false"))
-                    // Point Kotest straight at this source set's project config (which registers the Micronaut
-                    // extension + boots the Testcontainers Postgres). Unlike the `test` task, this custom JVM Test
-                    // Suite isn't wired up by the Micronaut Gradle plugin, so classpath auto-detection isn't set up.
                     systemProperty(
                         "kotest.framework.config.fqn",
                         "com.kuvaszuptime.kuvasz.uitest.UiTestProjectConfig",
@@ -207,8 +191,6 @@ testing {
     }
 }
 
-// Micronaut's annotation processor has to run over the `uiTest` source set as well, so that `@MicronautTest` can
-// inject beans (the `EmbeddedServer`, `DSLContext`) into the specs the same way it does for the `test` source set.
 dependencies {
     add("kaptUiTest", mn.micronaut.inject.java)
 }
@@ -224,17 +206,11 @@ kover {
     }
 }
 
-/**
- * Installs the headless Chromium that the Playwright-driven `uiTest` suite drives. `uiTest` depends on it, since the
- * automatic download on `Playwright.create()` is disabled there (it would pull in Firefox and WebKit as well).
- */
 tasks.register<JavaExec>("installPlaywrightChromium") {
     group = "verification"
     description = "Installs the headless Chromium used by the Playwright-driven uiTest suite."
     classpath = sourceSets["uiTest"].runtimeClasspath
     mainClass.set("com.microsoft.playwright.CLI")
-    // `--with-deps` pulls in the OS libraries Chromium needs via `sudo apt-get`, so it's restricted to the CI runners
-    // on purpose: locally it would either block on a sudo prompt or fail outright on a non-Debian distro.
     val withDeps = System.getProperty("os.name").contains("linux", ignoreCase = true) && System.getenv("CI") != null
     args(listOf("install") + (if (withDeps) listOf("--with-deps") else emptyList()) + listOf("chromium"))
 }
@@ -244,7 +220,7 @@ tasks.withType<JavaExec> {
         "-Xms64M",
         "-Xmx192M",
     )
-    systemProperty("micronaut.environments", "macos") // TODO revisit
+    systemProperty("micronaut.environments", "macos")
     systemProperty("micronaut.config.files", file("../localdev/application-dev.yml"))
 }
 
@@ -272,7 +248,7 @@ jib {
         }
     }
     to {
-        image = "kuvaszmonitoring/kuvasz:$version"
+        image = "fibbicles/kuvasz:$version"
         tags = setOf("latest")
     }
     container {
@@ -333,13 +309,11 @@ tasks.register("validateJsonSchemas") {
     }
 }
 
-// Generates the Git-based project version into the Kotlin code
 buildConfig {
     packageName("com.kuvaszuptime.kuvasz.buildconfig")
     buildConfigField("APP_VERSION", provider { gitVersion() })
 }
 
-// Importing the public resources (JS, CSS) from the UI module
 tasks.processResources {
     dependsOn(":ui:jsMinify")
     from("$rootDir/ui/src/main/resources/public") {
