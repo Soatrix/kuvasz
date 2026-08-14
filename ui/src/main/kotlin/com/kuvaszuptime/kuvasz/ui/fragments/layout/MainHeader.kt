@@ -8,8 +8,8 @@ import com.kuvaszuptime.kuvasz.ui.icons.*
 import com.kuvaszuptime.kuvasz.ui.utils.*
 import kotlinx.html.*
 
-internal const val DEFAULT_SITE_LOGO_URL = "/public/soatrix-logo.png"
-internal const val DEFAULT_SITE_LOGO_ALT = "Soatrix Status"
+internal const val DEFAULT_SITE_LOGO_URL = "/public/kuvasz-avatar.png"
+internal const val DEFAULT_SITE_LOGO_ALT = "Kuvasz Uptime"
 
 internal fun FlowContent.mainHeader(
     isAuthenticated: Boolean,

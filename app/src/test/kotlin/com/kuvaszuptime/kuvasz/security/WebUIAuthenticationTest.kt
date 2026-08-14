@@ -276,7 +276,7 @@ class WebUIAuthenticationTest(
         "the robots.txt static mapping does not shadow the other static resources" {
             // The robots.txt file is served via a catch-all static mapping, better to make sure the more specific
             // /public/** mapping still resolves its assets
-            val response = client.exchange(HttpRequest.GET("/public/soatrix-logo.png")).awaitFirst()
+            val response = client.exchange(HttpRequest.GET("/public/kuvasz-avatar.png")).awaitFirst()
 
             response.status shouldBe HttpStatus.OK
         }
